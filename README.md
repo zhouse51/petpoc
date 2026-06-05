@@ -33,3 +33,7 @@ Open `http://localhost:3000`. After login, the index page calls `GET /echo` with
 - `PROD`: set production values in Vercel using `.env.production.example` as the checklist.
 
 Do not commit real Clerk secret keys. Configure `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, and the Clerk redirect URLs separately for each Vercel environment.
+
+## Deployment
+
+DEV deploys through GitHub Actions to Vercel Preview deployments. See `docs/deployment.md` for required GitHub secrets and Vercel environment variables.
