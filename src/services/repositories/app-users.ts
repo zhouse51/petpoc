@@ -1,3 +1,5 @@
+import type { users } from "@prisma/client";
+
 import { prisma } from "@/services/repositories/client";
 
 export type PersistAppUserInput = {
@@ -6,11 +8,13 @@ export type PersistAppUserInput = {
   name?: string | null;
 };
 
-function getDisplayName(input: PersistAppUserInput) {
+const getDisplayName = (input: PersistAppUserInput): string => {
   return input.name || input.email || "Signed-in user";
-}
+};
 
-export async function upsertAppUser(input: PersistAppUserInput) {
+export const upsertAppUser = async (
+  input: PersistAppUserInput,
+): Promise<users> => {
   return prisma.users.upsert({
     where: {
       auth_user_id: input.clerkUserId,
@@ -23,12 +27,14 @@ export async function upsertAppUser(input: PersistAppUserInput) {
       name: getDisplayName(input),
     },
   });
-}
+};
 
-export async function getAppUserByClerkId(clerkUserId: string) {
+export const getAppUserByClerkId = async (
+  clerkUserId: string,
+): Promise<users | null> => {
   return prisma.users.findUnique({
     where: {
       auth_user_id: clerkUserId,
     },
   });
-}
+};

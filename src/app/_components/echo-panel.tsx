@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { RefreshCcw } from "lucide-react";
 
@@ -20,19 +20,19 @@ type DashboardState =
     }
   | { status: "error"; data?: undefined; error: string };
 
-export function EchoPanel() {
+export const EchoPanel = (): ReactElement => {
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const [state, setState] = useState<DashboardState>({ status: "idle" });
 
-  const displayName = useMemo(() => {
+  const displayName = useMemo<string>((): string => {
     if (!user) return "Signed-in user";
     return user.fullName || user.username || user.firstName || "Signed-in user";
   }, [user]);
 
   const email = user?.primaryEmailAddress?.emailAddress ?? "";
 
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = useCallback(async (): Promise<void> => {
     if (!isLoaded || !isSignedIn || !user?.id) return;
 
     setState({ status: "loading" });
@@ -53,7 +53,7 @@ export function EchoPanel() {
       });
 
       if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
+        const body = await response.json().catch((): Record<string, never> => ({}));
         throw new Error(body.error ?? `Echo failed with ${response.status}`);
       }
 
@@ -72,7 +72,9 @@ export function EchoPanel() {
       });
 
       if (!registerResponse.ok) {
-        const body = await registerResponse.json().catch(() => ({}));
+        const body = await registerResponse
+          .json()
+          .catch((): Record<string, never> => ({}));
         throw new Error(
           body.error ?? `User registration failed with ${registerResponse.status}`,
         );
@@ -87,7 +89,9 @@ export function EchoPanel() {
       );
 
       if (!userResponse.ok) {
-        const body = await userResponse.json().catch(() => ({}));
+        const body = await userResponse
+          .json()
+          .catch((): Record<string, never> => ({}));
         throw new Error(body.error ?? `User lookup failed with ${userResponse.status}`);
       }
 
@@ -104,7 +108,7 @@ export function EchoPanel() {
     }
   }, [displayName, email, getToken, isLoaded, isSignedIn, user?.id]);
 
-  useEffect(() => {
+  useEffect((): void => {
     void loadDashboardData();
   }, [loadDashboardData]);
 
@@ -147,4 +151,4 @@ export function EchoPanel() {
       ) : null}
     </section>
   );
-}
+};

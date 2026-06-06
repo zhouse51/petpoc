@@ -16,7 +16,9 @@ type ClerkSessionClaims = {
   family_name?: string;
 };
 
-export async function handleEchoGet(request: NextRequest) {
+export const handleEchoGet = async (
+  request: NextRequest,
+): Promise<NextResponse> => {
   const { isAuthenticated, sessionClaims, userId } = await auth({
     acceptsToken: "session_token",
   });
@@ -79,4 +81,4 @@ export async function handleEchoGet(request: NextRequest) {
     userId,
     tokenSource: "clerk",
   });
-}
+};

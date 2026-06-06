@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { useUser } from "@clerk/nextjs";
 
@@ -24,9 +24,9 @@ const spiritAnimals = [
   "🐢 Deadline-proof Turtle",
 ];
 
-function randomSpiritAnimal() {
+const randomSpiritAnimal = (): string => {
   return spiritAnimals[Math.floor(Math.random() * spiritAnimals.length)];
-}
+};
 
 type ProfileMetadata = {
   address?: string;
@@ -41,15 +41,17 @@ type SaveStatus = "idle" | "saving" | "saved" | "error";
  * the host node, or null when the account page isn't currently shown (e.g. the
  * user navigated to the Security tab) so the fields don't leak onto other pages.
  */
-function useClerkAccountPageHost() {
+const useClerkAccountPageHost = (): HTMLElement | null => {
   const [host, setHost] = useState<HTMLElement | null>(null);
 
-  useEffect(() => {
-    function sync() {
+  useEffect((): () => void => {
+    const sync = (): void => {
       const scrollBox =
         document.querySelector<HTMLElement>(".cl-pageScrollBox");
       // The Profile section only exists on the account page — use it to gate.
-      const onAccountPage = scrollBox?.querySelector(".cl-profileSection__profile");
+      const onAccountPage = scrollBox?.querySelector(
+        ".cl-profileSection__profile",
+      );
 
       if (!scrollBox || !onAccountPage) {
         setHost(null);
@@ -66,18 +68,18 @@ function useClerkAccountPageHost() {
         scrollBox.append(node);
       }
       setHost(node);
-    }
+    };
 
     sync();
     const observer = new MutationObserver(sync);
     observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    return (): void => observer.disconnect();
   }, []);
 
   return host;
-}
+};
 
-export function UserProfileMetadataFields() {
+export const UserProfileMetadataFields = (): ReactElement | null => {
   const { isLoaded, user } = useUser();
   const host = useClerkAccountPageHost();
   const [address, setAddress] = useState(defaultAddress);
@@ -85,7 +87,7 @@ export function UserProfileMetadataFields() {
   const [status, setStatus] = useState<SaveStatus>("idle");
   const [spiritAnimal, setSpiritAnimal] = useState(randomSpiritAnimal);
 
-  useEffect(() => {
+  useEffect((): void => {
     if (!isLoaded || !user) return;
 
     const metadata = user.unsafeMetadata as ProfileMetadata;
@@ -109,7 +111,7 @@ export function UserProfileMetadataFields() {
 
   const activeUser = user;
 
-  async function handleSave() {
+  const handleSave = async (): Promise<void> => {
     setStatus("saving");
     try {
       await activeUser.update({
@@ -123,7 +125,7 @@ export function UserProfileMetadataFields() {
     } catch {
       setStatus("error");
     }
-  }
+  };
 
   const fields = (
     <section className="mt-2 border-t pt-6 text-card-foreground">
@@ -138,7 +140,7 @@ export function UserProfileMetadataFields() {
           <input
             type="text"
             value={address}
-            onChange={(event) => {
+            onChange={(event): void => {
               setAddress(event.target.value);
               setStatus("idle");
             }}
@@ -151,7 +153,7 @@ export function UserProfileMetadataFields() {
           <input
             type="text"
             value={favoriteColor}
-            onChange={(event) => {
+            onChange={(event): void => {
               setFavoriteColor(event.target.value);
               setStatus("idle");
             }}
@@ -170,7 +172,7 @@ export function UserProfileMetadataFields() {
           variant="ghost"
           size="default"
           className="ml-auto"
-          onClick={() => setSpiritAnimal(randomSpiritAnimal())}
+          onClick={(): void => setSpiritAnimal(randomSpiritAnimal())}
         >
           🎲 Reroll
         </Button>
@@ -191,4 +193,4 @@ export function UserProfileMetadataFields() {
   );
 
   return createPortal(fields, host);
-}
+};

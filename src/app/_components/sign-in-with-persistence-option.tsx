@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactElement } from "react";
 import { SignIn } from "@clerk/nextjs";
 
 const keepSignedInKey = "petpoc.keepSignedIn";
 const optionId = "petpoc-keep-signed-in-option";
 
-function updatePersistencePreference(keepSignedIn: boolean) {
+const updatePersistencePreference = (keepSignedIn: boolean): void => {
   window.localStorage.setItem(keepSignedInKey, String(keepSignedIn));
-}
+};
 
-function createOption() {
+const createOption = (): HTMLLabelElement => {
   const storedPreference = window.localStorage.getItem(keepSignedInKey);
   const keepSignedIn = storedPreference === null || storedPreference === "true";
 
@@ -25,7 +25,7 @@ function createOption() {
   checkbox.type = "checkbox";
   checkbox.checked = keepSignedIn;
   checkbox.className = "h-4 w-4 rounded border-[#d8ddd2] accent-[#0f766e]";
-  checkbox.addEventListener("change", () => {
+  checkbox.addEventListener("change", (): void => {
     updatePersistencePreference(checkbox.checked);
   });
 
@@ -34,36 +34,36 @@ function createOption() {
 
   wrapper.append(checkbox, label);
   return wrapper;
-}
+};
 
-function insertPersistenceOption(root: HTMLDivElement) {
+const insertPersistenceOption = (root: HTMLDivElement): void => {
   if (root.querySelector(`#${optionId}`)) return;
 
   const buttons = Array.from(root.querySelectorAll("button"));
   const continueButton = buttons.find(
-    (button) => button.textContent?.trim().toLowerCase() === "continue",
+    (button): boolean => button.textContent?.trim().toLowerCase() === "continue",
   );
 
   if (!continueButton?.parentElement) return;
 
   continueButton.parentElement.insertBefore(createOption(), continueButton);
-}
+};
 
-export function SignInWithPersistenceOption() {
+export const SignInWithPersistenceOption = (): ReactElement => {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useEffect((): (() => void) | void => {
     const root = rootRef.current;
     if (!root) return;
 
     insertPersistenceOption(root);
 
-    const observer = new MutationObserver(() => {
+    const observer = new MutationObserver((): void => {
       insertPersistenceOption(root);
     });
 
     observer.observe(root, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    return (): void => observer.disconnect();
   }, []);
 
   return (
@@ -78,6 +78,6 @@ export function SignInWithPersistenceOption() {
       />
     </div>
   );
-}
+};
 
 export { keepSignedInKey };

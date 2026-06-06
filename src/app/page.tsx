@@ -1,9 +1,10 @@
+import type { ReactElement } from "react";
 import { auth } from "@clerk/nextjs/server";
 
 import { AccountMenu } from "@/app/_components/account-menu";
 import { EchoPanel } from "@/app/_components/echo-panel";
 
-export default async function Home() {
+const Home = async (): Promise<ReactElement> => {
   const { isAuthenticated, redirectToSignIn } = await auth();
 
   if (!isAuthenticated) {
@@ -23,4 +24,6 @@ export default async function Home() {
       </div>
     </main>
   );
-}
+};
+
+export default Home;

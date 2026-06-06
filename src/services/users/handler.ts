@@ -2,12 +2,15 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { registerUserRequestSchema } from "@/models/users";
+import type { UserResponse } from "@/models/users";
 import {
   getAppUserByClerkId,
   upsertAppUser,
 } from "@/services/repositories/app-users";
 
-function serializeUser(user: Awaited<ReturnType<typeof getAppUserByClerkId>>) {
+const serializeUser = (
+  user: Awaited<ReturnType<typeof getAppUserByClerkId>>,
+): UserResponse | null => {
   if (!user) return null;
 
   return {
@@ -15,9 +18,9 @@ function serializeUser(user: Awaited<ReturnType<typeof getAppUserByClerkId>>) {
     auth_user_id: user.auth_user_id,
     name: user.name,
   };
-}
+};
 
-async function getAuthenticatedUserId() {
+const getAuthenticatedUserId = async (): Promise<string | null> => {
   const { isAuthenticated, userId } = await auth({
     acceptsToken: "session_token",
   });
@@ -27,16 +30,18 @@ async function getAuthenticatedUserId() {
   }
 
   return userId;
-}
+};
 
-export async function handleRegisterUserPost(request: NextRequest) {
+export const handleRegisterUserPost = async (
+  request: NextRequest,
+): Promise<NextResponse> => {
   const userId = await getAuthenticatedUserId();
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const body = await request.json().catch((): Record<string, never> => ({}));
   const parsedBody = registerUserRequestSchema.safeParse(body);
 
   if (!parsedBody.success) {
@@ -65,12 +70,12 @@ export async function handleRegisterUserPost(request: NextRequest) {
   });
 
   return NextResponse.json(serializeUser(user), { status: 201 });
-}
+};
 
-export async function handleGetUserByClerkId(
+export const handleGetUserByClerkId = async (
   _request: NextRequest,
   clerkUserId: string,
-) {
+): Promise<NextResponse> => {
   const userId = await getAuthenticatedUserId();
 
   if (!userId) {
@@ -88,4 +93,4 @@ export async function handleGetUserByClerkId(
   }
 
   return NextResponse.json(serializeUser(user));
-}
+};

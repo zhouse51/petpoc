@@ -1,9 +1,10 @@
 "use client";
 
+import type { ReactElement } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { WandSparkles } from "lucide-react";
 
-export function AccountMenu() {
+export const AccountMenu = (): ReactElement => {
   return (
     <UserButton
       userProfileMode="navigation"
@@ -22,9 +23,9 @@ export function AccountMenu() {
         <UserButton.Action
           label="Do whatever Brian wants"
           labelIcon={<WandSparkles aria-hidden="true" className="h-4 w-4" />}
-          onClick={() => undefined}
+          onClick={(): void => undefined}
         />
       </UserButton.MenuItems>
     </UserButton>
   );
-}
+};

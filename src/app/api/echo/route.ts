@@ -1,7 +1,7 @@
-import type { NextRequest } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
 
 import { handleEchoGet } from "@/services/echo/handler";
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest): Promise<NextResponse> => {
   return handleEchoGet(request);
-}
+};

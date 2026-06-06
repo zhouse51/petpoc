@@ -6,14 +6,14 @@ const PASSWORD_PLACEHOLDERS = [
 
 type DatabaseEnv = Record<string, string | undefined>;
 
-export function getDatabaseUrl(env: DatabaseEnv = process.env) {
+export const getDatabaseUrl = (env: DatabaseEnv = process.env): string => {
   const databaseUrl = env.DATABASE_URL;
 
   if (!databaseUrl) {
     throw new Error("DATABASE_URL is required to initialize Prisma.");
   }
 
-  const placeholder = PASSWORD_PLACEHOLDERS.find((value) =>
+  const placeholder = PASSWORD_PLACEHOLDERS.find((value): boolean =>
     databaseUrl.includes(value),
   );
 
@@ -28,4 +28,4 @@ export function getDatabaseUrl(env: DatabaseEnv = process.env) {
   }
 
   return databaseUrl.replace(placeholder, encodeURIComponent(env.DATABASE_PWD));
-}
+};

@@ -1,10 +1,11 @@
 import Link from "next/link";
+import type { ReactElement } from "react";
 import { UserProfile } from "@clerk/nextjs";
 import { ArrowLeft } from "lucide-react";
 
 import { UserProfileMetadataFields } from "@/app/_components/user-profile-metadata-fields";
 
-export default function UserProfilePage() {
+const UserProfilePage = (): ReactElement => {
   return (
     <main className="flex min-h-screen flex-col items-center bg-background px-4 py-10">
       <div className="w-full max-w-4xl">
@@ -28,4 +29,6 @@ export default function UserProfilePage() {
       <UserProfileMetadataFields />
     </main>
   );
-}
+};
+
+export default UserProfilePage;

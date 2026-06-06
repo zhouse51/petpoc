@@ -7,7 +7,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/echo",
 ]);
 
-export default clerkMiddleware(async (auth, request) => {
+export default clerkMiddleware(async (auth, request): Promise<void> => {
   if (!isPublicRoute(request)) {
     await auth.protect();
   }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactElement, ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 
 import "./globals.css";
@@ -8,11 +9,11 @@ export const metadata: Metadata = {
   description: "Clerk-secured Next.js and Vercel Functions proof of concept",
 };
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
-  children: React.ReactNode;
-}>) {
+  children: ReactNode;
+}>): ReactElement => {
   return (
     <ClerkProvider
       appearance={{
@@ -33,4 +34,6 @@ export default function RootLayout({
       </html>
     </ClerkProvider>
   );
-}
+};
+
+export default RootLayout;

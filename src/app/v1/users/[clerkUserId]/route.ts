@@ -1,4 +1,4 @@
-import type { NextRequest } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
 
 import { handleGetUserByClerkId } from "@/services/users/handler";
 
@@ -8,8 +8,11 @@ type RouteContext = {
   }>;
 };
 
-export async function GET(request: NextRequest, context: RouteContext) {
+export const GET = async (
+  request: NextRequest,
+  context: RouteContext,
+): Promise<NextResponse> => {
   const { clerkUserId } = await context.params;
 
   return handleGetUserByClerkId(request, clerkUserId);
-}
+};
