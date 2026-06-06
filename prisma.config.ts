@@ -1,7 +1,7 @@
 import { config as loadEnv } from "dotenv";
 import { defineConfig } from "prisma/config";
 
-import { getDatabaseUrl } from "./src/services/db/database-url";
+import { getDatabaseUrl } from "./src/services/repositories/database-url";
 
 loadEnv({ path: ".env.local" });
 

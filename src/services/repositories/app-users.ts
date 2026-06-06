@@ -1,4 +1,4 @@
-import { prisma } from "@/services/db/client";
+import { prisma } from "@/services/repositories/client";
 
 export type PersistAppUserInput = {
   clerkUserId: string;

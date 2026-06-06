@@ -28,7 +28,7 @@ const eslintConfig = [
           ],
           patterns: [
             {
-              group: ["@/services/db/*"],
+              group: ["@/services/repositories/*"],
               message: "Database access must stay in API handlers or src/services.",
             },
           ],

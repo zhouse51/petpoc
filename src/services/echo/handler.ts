@@ -2,7 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { echoRequestSchema } from "@/models/echo";
-import { upsertAppUser } from "@/services/db/app-users";
+import { upsertAppUser } from "@/services/repositories/app-users";
 
 type ClerkSessionClaims = {
   name?: string;

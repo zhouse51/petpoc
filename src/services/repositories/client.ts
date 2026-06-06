@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { getDatabaseUrl } from "@/services/db/database-url";
+import { getDatabaseUrl } from "@/services/repositories/database-url";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;

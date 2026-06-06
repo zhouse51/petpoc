@@ -5,7 +5,7 @@ import { registerUserRequestSchema } from "@/models/users";
 import {
   getAppUserByClerkId,
   upsertAppUser,
-} from "@/services/db/app-users";
+} from "@/services/repositories/app-users";
 
 function serializeUser(user: Awaited<ReturnType<typeof getAppUserByClerkId>>) {
   if (!user) return null;
