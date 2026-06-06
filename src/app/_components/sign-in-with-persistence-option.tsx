@@ -30,7 +30,7 @@ function createOption() {
   });
 
   const label = document.createElement("span");
-  label.textContent = "Remember me";
+  label.textContent = "Remember me!";
 
   wrapper.append(checkbox, label);
   return wrapper;
