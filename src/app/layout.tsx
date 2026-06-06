@@ -22,6 +22,11 @@ export default function RootLayout({
           borderRadius: "8px",
         },
       }}
+      localization={{
+        userButton: {
+          action__manageAccount: "My Profile",
+        },
+      }}
     >
       <html lang="en">
         <body>{children}</body>
