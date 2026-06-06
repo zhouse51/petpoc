@@ -36,4 +36,4 @@ Do not commit real Clerk secret keys. Configure `NEXT_PUBLIC_CLERK_PUBLISHABLE_K
 
 ## Deployment
 
-DEV deploys through GitHub Actions to Vercel Preview deployments. See `docs/deployment.md` for required GitHub secrets and Vercel environment variables.
+DEV deploys through GitHub Actions to Vercel Preview deployments. Use a stable DEV alias for auth testing so Clerk sessions survive across deployments. See `docs/deployment.md` for required GitHub secrets, optional alias config, and Vercel environment variables.

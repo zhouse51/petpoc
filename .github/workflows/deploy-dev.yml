@@ -13,6 +13,7 @@ concurrency:
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_DEV_ALIAS: ${{ vars.VERCEL_DEV_ALIAS }}
 
 jobs:
   deploy-dev:
@@ -61,8 +62,20 @@ jobs:
           echo "url=$deployment_url" >> "$GITHUB_OUTPUT"
           echo "DEV deployment: $deployment_url"
 
+      - name: Assign stable DEV alias
+        id: alias
+        if: env.VERCEL_DEV_ALIAS != ''
+        run: |
+          vercel alias set "${{ steps.deploy.outputs.url }}" "$VERCEL_DEV_ALIAS" --token=${{ secrets.VERCEL_TOKEN }}
+          echo "url=https://$VERCEL_DEV_ALIAS" >> "$GITHUB_OUTPUT"
+          echo "Stable DEV URL: https://$VERCEL_DEV_ALIAS"
+
       - name: Add deployment summary
         run: |
           echo "### Vercel DEV deployment" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployment URL: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "${{ steps.alias.outputs.url }}" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Stable DEV URL: ${{ steps.alias.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+          fi
