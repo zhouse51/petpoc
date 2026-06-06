@@ -2,9 +2,13 @@ import { prisma } from "@/services/db/client";
 
 export type PersistAppUserInput = {
   clerkUserId: string;
-  email: string;
+  email?: string | null;
   name?: string | null;
 };
+
+function getDisplayName(input: PersistAppUserInput) {
+  return input.name || input.email || "Signed-in user";
+}
 
 export async function upsertAppUser(input: PersistAppUserInput) {
   return prisma.users.upsert({
@@ -13,10 +17,10 @@ export async function upsertAppUser(input: PersistAppUserInput) {
     },
     create: {
       auth_user_id: input.clerkUserId,
-      name: input.name ?? input.email,
+      name: getDisplayName(input),
     },
     update: {
-      name: input.name ?? input.email,
+      name: getDisplayName(input),
     },
   });
 }

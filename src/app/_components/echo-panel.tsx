@@ -5,17 +5,25 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { RefreshCcw } from "lucide-react";
 
 import type { EchoResponse } from "@/models/echo";
+import type { UserResponse } from "@/models/users";
 import { Button } from "@/app/_components/ui/button";
 
-type EchoState =
+type DashboardState =
   | { status: "idle" | "loading"; data?: undefined; error?: undefined }
-  | { status: "success"; data: EchoResponse; error?: undefined }
+  | {
+      status: "success";
+      data: {
+        echo: EchoResponse;
+        user: UserResponse;
+      };
+      error?: undefined;
+    }
   | { status: "error"; data?: undefined; error: string };
 
 export function EchoPanel() {
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
-  const [state, setState] = useState<EchoState>({ status: "idle" });
+  const [state, setState] = useState<DashboardState>({ status: "idle" });
 
   const displayName = useMemo(() => {
     if (!user) return "Signed-in user";
@@ -24,8 +32,8 @@ export function EchoPanel() {
 
   const email = user?.primaryEmailAddress?.emailAddress ?? "";
 
-  const loadEcho = useCallback(async () => {
-    if (!isLoaded || !isSignedIn) return;
+  const loadDashboardData = useCallback(async () => {
+    if (!isLoaded || !isSignedIn || !user?.id) return;
 
     setState({ status: "loading" });
 
@@ -50,7 +58,41 @@ export function EchoPanel() {
       }
 
       const data = (await response.json()) as EchoResponse;
-      setState({ status: "success", data });
+
+      const sharedHeaders = {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      const registerResponse = await fetch("/v1/users/register", {
+        method: "POST",
+        headers: sharedHeaders,
+        body: JSON.stringify({ name: data.name }),
+      });
+
+      if (!registerResponse.ok) {
+        const body = await registerResponse.json().catch(() => ({}));
+        throw new Error(
+          body.error ?? `User registration failed with ${registerResponse.status}`,
+        );
+      }
+
+      const userResponse = await fetch(
+        `/v1/users/${encodeURIComponent(user.id)}`,
+        {
+          method: "GET",
+          headers: sharedHeaders,
+        },
+      );
+
+      if (!userResponse.ok) {
+        const body = await userResponse.json().catch(() => ({}));
+        throw new Error(body.error ?? `User lookup failed with ${userResponse.status}`);
+      }
+
+      const dbUser = (await userResponse.json()) as UserResponse;
+      setState({ status: "success", data: { echo: data, user: dbUser } });
     } catch (error) {
       setState({
         status: "error",
@@ -60,28 +102,36 @@ export function EchoPanel() {
             : "Unable to call the echo API",
       });
     }
-  }, [displayName, email, getToken, isLoaded, isSignedIn]);
+  }, [displayName, email, getToken, isLoaded, isSignedIn, user?.id]);
 
   useEffect(() => {
-    void loadEcho();
-  }, [loadEcho]);
+    void loadDashboardData();
+  }, [loadDashboardData]);
 
   return (
-    <section className="w-full max-w-2xl rounded-md border bg-card p-6 text-card-foreground shadow-sm">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal">Signed in</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            The backend echoed your Clerk-authenticated identity.
+    <section className="w-full max-w-5xl py-6 text-foreground">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2 text-sm sm:text-base">
+          <p className="break-words">
+            <span className="font-semibold">Echo:</span>{" "}
+            {state.status === "success"
+              ? `${state.data.echo.name}, ${state.data.echo.email}`
+              : `${displayName}, ${email || "No email"}`}
+          </p>
+          <p className="break-words">
+            <span className="font-semibold">User from DB:</span>{" "}
+            {state.status === "success"
+              ? `${state.data.user.auth_user_id}, ${state.data.user.name}`
+              : "Loading..."}
           </p>
         </div>
         <Button
-          aria-label="Refresh echo"
-          onClick={loadEcho}
+          aria-label="Refresh"
+          onClick={loadDashboardData}
           size="icon"
           variant="secondary"
           disabled={state.status === "loading"}
-          title="Refresh echo"
+          title="Refresh"
         >
           <RefreshCcw
             aria-hidden="true"
@@ -89,21 +139,6 @@ export function EchoPanel() {
           />
         </Button>
       </div>
-
-      <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
-        <div className="rounded-md bg-muted p-4">
-          <dt className="font-medium text-muted-foreground">Name</dt>
-          <dd className="mt-1 break-words text-base font-semibold">
-            {state.status === "success" ? state.data.name : displayName}
-          </dd>
-        </div>
-        <div className="rounded-md bg-muted p-4">
-          <dt className="font-medium text-muted-foreground">Email</dt>
-          <dd className="mt-1 break-words text-base font-semibold">
-            {state.status === "success" ? state.data.email : email || "No email"}
-          </dd>
-        </div>
-      </dl>
 
       {state.status === "error" ? (
         <p className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">

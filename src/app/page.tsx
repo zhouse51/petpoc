@@ -18,7 +18,7 @@ export default async function Home() {
           <AccountMenu />
         </div>
       </header>
-      <div className="mx-auto flex w-full max-w-5xl flex-1 items-center justify-center px-6 py-10">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 items-start justify-center px-6 py-6">
         <EchoPanel />
       </div>
     </main>
