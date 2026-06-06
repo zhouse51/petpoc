@@ -13,6 +13,29 @@ const eslintConfig = [
       "yarn.lock",
     ],
   },
+  {
+    files: ["src/app/**/*.{ts,tsx}"],
+    ignores: ["src/app/api/**/*", "src/app/**/route.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@prisma/client",
+              message: "Database access must stay in API handlers or src/services.",
+            },
+          ],
+          patterns: [
+            {
+              group: ["@/services/db/*"],
+              message: "Database access must stay in API handlers or src/services.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 

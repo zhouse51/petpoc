@@ -2,6 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { echoRequestSchema } from "@/models/echo";
+import { upsertAppUser } from "@/services/db/app-users";
 
 type ClerkSessionClaims = {
   name?: string;
@@ -63,9 +64,18 @@ export async function handleEchoGet(request: NextRequest) {
     claims.emailAddress ||
     claims.primary_email_address;
 
+  const name = claimName || fallbackName;
+  const email = claimEmail || fallbackEmail;
+
+  await upsertAppUser({
+    clerkUserId: userId,
+    email,
+    name,
+  });
+
   return NextResponse.json({
-    name: claimName || fallbackName,
-    email: claimEmail || fallbackEmail,
+    name,
+    email,
     userId,
     tokenSource: "clerk",
   });

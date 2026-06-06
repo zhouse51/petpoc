@@ -37,3 +37,28 @@ Do not commit real Clerk secret keys. Configure `NEXT_PUBLIC_CLERK_PUBLISHABLE_K
 ## Deployment
 
 DEV deploys through GitHub Actions to Vercel Preview deployments. Use a stable DEV alias for auth testing so Clerk sessions survive across deployments. See `docs/deployment.md` for required GitHub secrets, optional alias config, and Vercel environment variables.
+
+## Database
+
+The backend uses Prisma for database access. Keep database calls inside `src/services` and API route handlers; frontend components should call APIs instead of importing Prisma directly.
+
+Required environment variables:
+
+```bash
+DATABASE_URL=postgresql://user:[YOUR-PASSWORD]@host:5432/database?schema=public
+DATABASE_DIRECT_URL=postgresql://user:[YOUR-PASSWORD]@host:5432/database?schema=public
+DATABASE_PWD=replace-with-database-password
+```
+
+`DATABASE_URL` is used by the app at runtime. 
+`DATABASE_DIRECT_URL` is optional and used by Prisma CLI commands when the runtime URL points at a pooler. You can also provide a complete URL with the password already included. If either URL contains 
+`[YOUR-PASSWORD]`, `${DATABASE_PWD}`, or `{DATABASE_PWD}`, the backend and Prisma CLI will fill it from `DATABASE_PWD`.
+
+Useful commands:
+
+```bash
+yarn prisma:generate
+yarn prisma:migrate
+yarn prisma:deploy
+yarn prisma:studio
+```
