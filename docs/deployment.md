@@ -51,3 +51,13 @@ Vercel uses `preview` as the non-production deployment target. In this project, 
 Use the stable DEV alias when testing auth. Do not bookmark the one-off deployment URL emitted by `vercel deploy`, because each deployment can have a different hostname and Clerk session cookies are scoped by hostname. A changing hostname makes the browser look signed out and sends the user through Google again.
 
 For DEV on Vercel Preview, use Clerk development keys with the Vercel Preview environment. If you later move DEV to a custom domain with production Clerk keys, configure the matching domain and social connection redirect settings in Clerk.
+
+To keep users signed in for 15 days, configure the Clerk instance used by DEV:
+
+1. Open Clerk Dashboard.
+2. Go to Sessions.
+3. Enable Maximum lifetime.
+4. Set Maximum lifetime to 15 days.
+5. Save the change.
+
+Clerk controls maximum session lifetime at the instance level. The login page preference can opt users out of persistence for later browser tabs, but the 15-day upper bound for persisted sessions is enforced by the Clerk Sessions setting.

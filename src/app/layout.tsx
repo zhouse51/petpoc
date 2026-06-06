@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 
+import { SessionPersistenceGuard } from "@/app/_components/session-persistence-guard";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,7 +26,9 @@ export default function RootLayout({
       }}
     >
       <html lang="en">
-        <body>{children}</body>
+        <body>
+          <SessionPersistenceGuard>{children}</SessionPersistenceGuard>
+        </body>
       </html>
     </ClerkProvider>
   );
