@@ -60,4 +60,4 @@ To keep users signed in for 15 days, configure the Clerk instance used by DEV:
 4. Set Maximum lifetime to 15 days.
 5. Save the change.
 
-Clerk controls maximum session lifetime at the instance level. The login page preference can opt users out of persistence for later browser tabs, but the 15-day upper bound for persisted sessions is enforced by the Clerk Sessions setting.
+Clerk controls maximum session lifetime at the instance level. The login page keeps the "Keep me signed in for 15 days" option lightweight; the actual persisted session duration is enforced by the Clerk Sessions setting.
