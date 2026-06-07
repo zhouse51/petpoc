@@ -79,5 +79,3 @@ export const SignInWithPersistenceOption = (): ReactElement => {
     </div>
   );
 };
-
-export { keepSignedInKey };

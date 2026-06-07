@@ -2,6 +2,20 @@
 
 Next.js 15 + React 19 + TypeScript scaffold for a Clerk-authenticated frontend and Vercel Function-backed REST API.
 
+## Stack
+
+- Next.js 15
+- React 19
+- TypeScript
+- Tailwind CSS
+- shadcn/ui-style local components
+- Clerk for authentication
+- Vercel Functions / Next route handlers for backend APIs
+- REST APIs documented in `openapi.yaml`
+- Zod validation
+- Prisma ORM
+- Supabase PostgreSQL
+
 ## Local setup
 
 1. Install dependencies:
@@ -25,6 +39,18 @@ yarn dev
 ```
 
 Open `http://localhost:3000`. After login, the index page calls `GET /api/v1/echo` with the Clerk JWT bearer token and displays the authenticated user name/email returned by the backend. It also calls the `/api/v1/users` endpoints to register and display the database user.
+
+## Scripts
+
+Available scripts are defined in `package.json`. Common scripts include:
+
+```bash
+yarn dev
+yarn test
+yarn typecheck
+yarn lint
+yarn build
+```
 
 ## Environments
 
@@ -58,7 +84,7 @@ DATABASE_PWD=replace-with-database-password
 `DATABASE_DIRECT_URL` is optional and used by Prisma CLI commands when the runtime URL points at a pooler. You can also provide a complete URL with the password already included. If either URL contains 
 `[YOUR-PASSWORD]`, `${DATABASE_PWD}`, or `{DATABASE_PWD}`, the backend and Prisma CLI will fill it from `DATABASE_PWD`.
 
-Useful commands:
+Useful Prisma scripts are defined in `package.json`. Common Prisma scripts include:
 
 ```bash
 yarn prisma:generate
