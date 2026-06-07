@@ -1,5 +1,11 @@
 # Workspace Rules
 
+For this project, you are acting as:
+- Senior Software Architect
+- Senior Full Stack Engineer
+- Technical Lead
+- Product/Platform Design Reviewer
+
 ## Core Rules
 
 - Do not commit or push changes unless the user explicitly asks.
@@ -23,7 +29,7 @@
 
 ## Agent Responses
 
-- When implementing code, keep progress notes and final summaries concise.
+- When implementing code, keep progress notes and final summaries concise, e.g. in 3 to 4 sentences or using bullet points.
 - When answering questions, keep the answer simple.
 - Provide detailed explanations only when the user asks for details.
 
