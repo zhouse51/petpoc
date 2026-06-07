@@ -21,6 +21,8 @@ tags:
     description: Clerk-authenticated identity echo endpoints.
   - name: Users
     description: User registration and user lookup endpoints backed by the users table.
+  - name: Notes
+    description: Authenticated user notes backed by the notes table.
 paths:
   /api/v1/echo:
     get:
@@ -51,6 +53,67 @@ paths:
                     tokenSource: clerk
         "400":
           $ref: "#/components/responses/InvalidEchoQuery"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/v1/notes:
+    get:
+      operationId: listNotes
+      tags:
+        - Notes
+      summary: List notes for the authenticated user.
+      description: |
+        Resolves the authenticated Clerk user to the corresponding `users`
+        table row and returns notes belonging to that database user.
+      responses:
+        "200":
+          description: Notes found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotesResponse"
+              examples:
+                success:
+                  value:
+                    notes:
+                      - id: 89ccfdb7-c1ea-4e31-a2cf-b7018fab31ad
+                        userId: 7dc4e84a-9abc-4f01-bf61-669b747fb1b8
+                        message: Remember favorite food
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createNote
+      tags:
+        - Notes
+      summary: Create a note for the authenticated user.
+      description: |
+        Validates the Clerk session token, resolves the user in the `users`
+        table, and stores the note message in the `notes` table with that
+        database user ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNoteRequest"
+            examples:
+              message:
+                value:
+                  message: Remember favorite food
+      responses:
+        "201":
+          description: Note created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+              examples:
+                success:
+                  value:
+                    id: 89ccfdb7-c1ea-4e31-a2cf-b7018fab31ad
+                    userId: 7dc4e84a-9abc-4f01-bf61-669b747fb1b8
+                    message: Remember favorite food
+        "400":
+          $ref: "#/components/responses/InvalidNoteBody"
         "401":
           $ref: "#/components/responses/Unauthorized"
   /api/v1/users/register:
@@ -214,6 +277,48 @@ components:
         name:
           type: string
           example: James Zhou
+    CreateNoteRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          example: Remember favorite food
+    Note:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - userId
+        - message
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Database note ID.
+          example: 89ccfdb7-c1ea-4e31-a2cf-b7018fab31ad
+        userId:
+          type: string
+          format: uuid
+          description: Database user ID stored in the notes.user_id column.
+          example: 7dc4e84a-9abc-4f01-bf61-669b747fb1b8
+        message:
+          type: string
+          example: Remember favorite food
+    NotesResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - notes
+      properties:
+        notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Note"
     ErrorResponse:
       type: object
       additionalProperties: true
@@ -290,4 +395,17 @@ components:
                 error: Invalid register user body
                 details:
                   name:
+                    - String must contain at least 1 character(s)
+    InvalidNoteBody:
+      description: Invalid note request body.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+          examples:
+            emptyMessage:
+              value:
+                error: Invalid note body
+                details:
+                  message:
                     - String must contain at least 1 character(s)

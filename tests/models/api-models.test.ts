@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { echoRequestSchema, echoResponseSchema } from "@/models/echo";
 import {
+  createNoteRequestSchema,
+  noteResponseSchema,
+  notesResponseSchema,
+} from "@/models/notes";
+import {
   registerUserRequestSchema,
   userResponseSchema,
 } from "@/models/users";
@@ -66,5 +71,31 @@ describe("user schemas", (): void => {
         name: "James Zhou",
       }).success,
     ).toBe(true);
+  });
+});
+
+describe("note schemas", (): void => {
+  it("trims a note message", (): void => {
+    const result = createNoteRequestSchema.safeParse({
+      message: " Remember favorite food ",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.success ? result.data.message : null).toBe("Remember favorite food");
+  });
+
+  it("rejects an empty note message", (): void => {
+    expect(createNoteRequestSchema.safeParse({ message: "" }).success).toBe(false);
+  });
+
+  it("accepts note response shapes", (): void => {
+    const note = {
+      id: "89ccfdb7-c1ea-4e31-a2cf-b7018fab31ad",
+      userId: "7dc4e84a-9abc-4f01-bf61-669b747fb1b8",
+      message: "Remember favorite food",
+    };
+
+    expect(noteResponseSchema.safeParse(note).success).toBe(true);
+    expect(notesResponseSchema.safeParse({ notes: [note] }).success).toBe(true);
   });
 });

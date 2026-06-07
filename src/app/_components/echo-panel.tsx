@@ -1,10 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type ReactElement,
+} from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCcw, Send } from "lucide-react";
 
 import type { EchoResponse } from "@/models/echo";
+import type { NoteResponse, NotesResponse } from "@/models/notes";
 import type { UserResponse } from "@/models/users";
 import { Button } from "@/app/_components/ui/button";
 
@@ -24,6 +32,10 @@ export const EchoPanel = (): ReactElement => {
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const [state, setState] = useState<DashboardState>({ status: "idle" });
+  const [notes, setNotes] = useState<NoteResponse[]>([]);
+  const [message, setMessage] = useState<string>("");
+  const [isSending, setIsSending] = useState<boolean>(false);
+  const [notesError, setNotesError] = useState<string | null>(null);
 
   const displayName = useMemo<string>((): string => {
     if (!user) return "Signed-in user";
@@ -96,6 +108,21 @@ export const EchoPanel = (): ReactElement => {
       }
 
       const dbUser = (await userResponse.json()) as UserResponse;
+      const notesResponse = await fetch("/api/v1/notes", {
+        method: "GET",
+        headers: sharedHeaders,
+      });
+
+      if (!notesResponse.ok) {
+        const body = await notesResponse
+          .json()
+          .catch((): Record<string, never> => ({}));
+        throw new Error(body.error ?? `Notes lookup failed with ${notesResponse.status}`);
+      }
+
+      const notesData = (await notesResponse.json()) as NotesResponse;
+      setNotes(notesData.notes);
+      setNotesError(null);
       setState({ status: "success", data: { echo: data, user: dbUser } });
     } catch (error) {
       setState({
@@ -107,6 +134,50 @@ export const EchoPanel = (): ReactElement => {
       });
     }
   }, [displayName, email, getToken, isLoaded, isSignedIn, user?.id]);
+
+  const handleSendNote = useCallback(
+    async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+      event.preventDefault();
+
+      const trimmedMessage = message.trim();
+
+      if (!trimmedMessage || isSending) return;
+
+      setIsSending(true);
+      setNotesError(null);
+
+      try {
+        const token = await getToken();
+        const response = await fetch("/api/v1/notes", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ message: trimmedMessage }),
+        });
+
+        if (!response.ok) {
+          const body = await response
+            .json()
+            .catch((): Record<string, never> => ({}));
+          throw new Error(body.error ?? `Note save failed with ${response.status}`);
+        }
+
+        const createdNote = (await response.json()) as NoteResponse;
+        setNotes((currentNotes): NoteResponse[] => [...currentNotes, createdNote]);
+        setMessage("");
+      } catch (error) {
+        setNotesError(
+          error instanceof Error ? error.message : "Unable to save the note",
+        );
+      } finally {
+        setIsSending(false);
+      }
+    },
+    [getToken, isSending, message],
+  );
 
   useEffect((): void => {
     void loadDashboardData();
@@ -149,6 +220,54 @@ export const EchoPanel = (): ReactElement => {
           {state.error}
         </p>
       ) : null}
+
+      <form className="mt-6 flex flex-col gap-3 sm:flex-row" onSubmit={handleSendNote}>
+        <label className="sr-only" htmlFor="note-message">
+          User note
+        </label>
+        <input
+          id="note-message"
+          className="h-10 min-w-0 flex-1 rounded-md border bg-card px-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          maxLength={2_000}
+          name="message"
+          onChange={(event): void => {
+            setMessage(event.target.value);
+          }}
+          placeholder="Add a note"
+          value={message}
+        />
+        <Button
+          className="sm:w-auto"
+          disabled={isSending || !message.trim()}
+          type="submit"
+        >
+          <Send aria-hidden="true" className="h-4 w-4" />
+          Send
+        </Button>
+      </form>
+
+      {notesError ? (
+        <p className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {notesError}
+        </p>
+      ) : null}
+
+      <div className="mt-4 space-y-2">
+        {notes.length > 0 ? (
+          notes.map(
+            (note): ReactElement => (
+              <p
+                className="break-words rounded-md border bg-card p-3 text-sm"
+                key={note.id}
+              >
+                {note.message}
+              </p>
+            ),
+          )
+        ) : (
+          <p className="text-sm text-muted-foreground">No notes yet.</p>
+        )}
+      </div>
     </section>
   );
 };
