@@ -44,7 +44,7 @@ export const EchoPanel = (): ReactElement => {
         email,
       });
 
-      const response = await fetch(`/echo?${params.toString()}`, {
+      const response = await fetch(`/api/v1/echo?${params.toString()}`, {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -65,7 +65,7 @@ export const EchoPanel = (): ReactElement => {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      const registerResponse = await fetch("/v1/users/register", {
+      const registerResponse = await fetch("/api/v1/users/register", {
         method: "POST",
         headers: sharedHeaders,
         body: JSON.stringify({ name: data.name }),
@@ -81,7 +81,7 @@ export const EchoPanel = (): ReactElement => {
       }
 
       const userResponse = await fetch(
-        `/v1/users/${encodeURIComponent(user.id)}`,
+        `/api/v1/users/${encodeURIComponent(user.id)}`,
         {
           method: "GET",
           headers: sharedHeaders,

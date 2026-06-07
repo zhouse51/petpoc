@@ -24,7 +24,7 @@ cp .env.local.example .env.local
 yarn dev
 ```
 
-Open `http://localhost:3000`. After login, the index page calls `GET /echo` with the Clerk JWT bearer token and displays the authenticated user name/email returned by the backend. `GET /api/echo` is also available as a Next.js API-style alias.
+Open `http://localhost:3000`. After login, the index page calls `GET /api/v1/echo` with the Clerk JWT bearer token and displays the authenticated user name/email returned by the backend. It also calls the `/api/v1/users` endpoints to register and display the database user.
 
 ## Environments
 
@@ -37,6 +37,10 @@ Do not commit real Clerk secret keys. Configure `NEXT_PUBLIC_CLERK_PUBLISHABLE_K
 ## Deployment
 
 DEV deploys through GitHub Actions to Vercel Preview deployments. Use a stable DEV alias for auth testing so Clerk sessions survive across deployments. See `docs/deployment.md` for required GitHub secrets, optional alias config, and Vercel environment variables.
+
+## Agent Instructions
+
+Developers using Codex, Claude, or another coding agent should read `AGENTS.md` before making changes.
 
 ## Database
 
