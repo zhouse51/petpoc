@@ -7,9 +7,22 @@ import { SignUp } from "@clerk/nextjs";
 
 import { Button } from "@/app/_components/ui/button";
 
+const signUpAgreementKey = "petpoc.signUpAgreement.v1";
+
+const hasAcceptedAgreement = (): boolean => {
+  if (typeof window === "undefined") return false;
+
+  return window.sessionStorage.getItem(signUpAgreementKey) === "true";
+};
+
 export const SignUpAgreement = (): ReactElement => {
   const [accepted, setAccepted] = useState(false);
-  const [canContinue, setCanContinue] = useState(false);
+  const [canContinue, setCanContinue] = useState(hasAcceptedAgreement);
+
+  const continueToSignUp = (): void => {
+    window.sessionStorage.setItem(signUpAgreementKey, "true");
+    setCanContinue(true);
+  };
 
   if (canContinue) {
     return (
@@ -56,7 +69,7 @@ export const SignUpAgreement = (): ReactElement => {
       <Button
         className="mt-6 w-full"
         disabled={!accepted}
-        onClick={(): void => setCanContinue(true)}
+        onClick={continueToSignUp}
         type="button"
       >
         Continue
