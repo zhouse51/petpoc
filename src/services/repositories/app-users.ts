@@ -38,3 +38,17 @@ export const getAppUserByClerkId = async (
     },
   });
 };
+
+export const updateAppUserStripeCustomerId = async (
+  userId: string,
+  stripeCustomerId: string,
+): Promise<users> => {
+  return prisma.users.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      stripe_customer_id: stripeCustomerId,
+    },
+  });
+};

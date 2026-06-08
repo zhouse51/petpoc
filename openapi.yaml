@@ -23,6 +23,8 @@ tags:
     description: User registration and user lookup endpoints backed by the users table.
   - name: Notes
     description: Authenticated user notes backed by the notes table.
+  - name: Payment Methods
+    description: Stripe-backed credit card management endpoints.
 paths:
   /api/v1/echo:
     get:
@@ -116,6 +118,75 @@ paths:
           $ref: "#/components/responses/InvalidNoteBody"
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /api/v1/payment-methods:
+    get:
+      operationId: listPaymentMethods
+      tags:
+        - Payment Methods
+      summary: List saved credit cards for the authenticated user.
+      description: |
+        Resolves the authenticated Clerk user to the corresponding database
+        user, then uses `users.stripe_customer_id` to list card payment methods
+        from Stripe. If no Stripe customer exists yet, returns an empty list.
+      responses:
+        "200":
+          description: Payment methods found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentMethodsResponse"
+              examples:
+                success:
+                  value:
+                    paymentMethods:
+                      - id: pm_123
+                        brand: visa
+                        last4: "4242"
+                        expMonth: 12
+                        expYear: 2030
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/v1/payment-methods/setup-intent:
+    post:
+      operationId: createPaymentMethodSetupIntent
+      tags:
+        - Payment Methods
+      summary: Create a Stripe SetupIntent for adding a card.
+      description: |
+        Creates a Stripe customer for the authenticated user when
+        `users.stripe_customer_id` is missing, stores the customer ID in the
+        users table, and returns a SetupIntent client secret for Stripe.js.
+      responses:
+        "201":
+          description: SetupIntent created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupIntentResponse"
+              examples:
+                success:
+                  value:
+                    clientSecret: seti_123_secret_abc
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/v1/payment-methods/{payment_method_id}:
+    delete:
+      operationId: deletePaymentMethod
+      tags:
+        - Payment Methods
+      summary: Remove a saved credit card.
+      description: |
+        Retrieves the Stripe payment method, verifies it belongs to the
+        authenticated user's Stripe customer, and detaches it in Stripe.
+      parameters:
+        - $ref: "#/components/parameters/PaymentMethodId"
+      responses:
+        "204":
+          description: Payment method removed.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/PaymentMethodNotFound"
   /api/v1/users/register:
     post:
       operationId: registerUser
@@ -151,6 +222,7 @@ paths:
                     id: 7dc4e84a-9abc-4f01-bf61-669b747fb1b8
                     auth_user_id: user_2abc123xyz
                     name: James Zhou
+                    stripe_customer_id: cus_123
         "400":
           $ref: "#/components/responses/InvalidRegisterUserBody"
         "401":
@@ -180,6 +252,7 @@ paths:
                     id: 7dc4e84a-9abc-4f01-bf61-669b747fb1b8
                     auth_user_id: user_2abc123xyz
                     name: James Zhou
+                    stripe_customer_id: cus_123
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -221,6 +294,15 @@ components:
         type: string
         minLength: 1
       example: user_2abc123xyz
+    PaymentMethodId:
+      name: payment_method_id
+      in: path
+      required: true
+      description: Stripe payment method ID.
+      schema:
+        type: string
+        minLength: 1
+      example: pm_123
   schemas:
     EchoResponse:
       type: object
@@ -277,6 +359,12 @@ components:
         name:
           type: string
           example: James Zhou
+        stripe_customer_id:
+          type:
+            - string
+            - "null"
+          description: Stripe customer ID for saved payment methods.
+          example: cus_123
     CreateNoteRequest:
       type: object
       additionalProperties: false
@@ -319,6 +407,52 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Note"
+    SetupIntentResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - clientSecret
+      properties:
+        clientSecret:
+          type: string
+          description: Stripe SetupIntent client secret.
+          example: seti_123_secret_abc
+    PaymentMethod:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - brand
+        - last4
+        - expMonth
+        - expYear
+      properties:
+        id:
+          type: string
+          description: Stripe payment method ID.
+          example: pm_123
+        brand:
+          type: string
+          example: visa
+        last4:
+          type: string
+          example: "4242"
+        expMonth:
+          type: integer
+          example: 12
+        expYear:
+          type: integer
+          example: 2030
+    PaymentMethodsResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - paymentMethods
+      properties:
+        paymentMethods:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentMethod"
     ErrorResponse:
       type: object
       additionalProperties: true
@@ -370,6 +504,16 @@ components:
             notFound:
               value:
                 error: User not found
+    PaymentMethodNotFound:
+      description: No matching payment method exists for the authenticated user.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            notFound:
+              value:
+                error: Payment method not found
     InvalidEchoQuery:
       description: Invalid echo query parameters.
       content:

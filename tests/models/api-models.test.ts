@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { echoRequestSchema, echoResponseSchema } from "@/models/echo";
 import {
+  paymentMethodResponseSchema,
+  paymentMethodsResponseSchema,
+  setupIntentResponseSchema,
+} from "@/models/payment-methods";
+import {
   createNoteRequestSchema,
   noteResponseSchema,
   notesResponseSchema,
@@ -69,6 +74,34 @@ describe("user schemas", (): void => {
         id: "7dc4e84a-9abc-4f01-bf61-669b747fb1b8",
         auth_user_id: "user_abc123",
         name: "James Zhou",
+        stripe_customer_id: "cus_123",
+      }).success,
+    ).toBe(true);
+  });
+});
+
+describe("payment method schemas", (): void => {
+  it("accepts setup intent response shapes", (): void => {
+    expect(
+      setupIntentResponseSchema.safeParse({
+        clientSecret: "seti_123_secret_abc",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("accepts payment method response shapes", (): void => {
+    const paymentMethod = {
+      id: "pm_123",
+      brand: "visa",
+      last4: "4242",
+      expMonth: 12,
+      expYear: 2030,
+    };
+
+    expect(paymentMethodResponseSchema.safeParse(paymentMethod).success).toBe(true);
+    expect(
+      paymentMethodsResponseSchema.safeParse({
+        paymentMethods: [paymentMethod],
       }).success,
     ).toBe(true);
   });

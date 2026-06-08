@@ -17,6 +17,7 @@ const serializeUser = (
     id: user.id,
     auth_user_id: user.auth_user_id,
     name: user.name,
+    stripe_customer_id: user.stripe_customer_id,
   };
 };
 

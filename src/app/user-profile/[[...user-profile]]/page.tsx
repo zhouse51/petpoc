@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { UserProfile } from "@clerk/nextjs";
 import { ArrowLeft } from "lucide-react";
 
 import { UserProfileMetadataFields } from "@/app/_components/user-profile-metadata-fields";
+import { UserProfilePanel } from "@/app/_components/user-profile-panel";
 
 const UserProfilePage = (): ReactElement => {
   return (
@@ -17,15 +17,7 @@ const UserProfilePage = (): ReactElement => {
           Back
         </Link>
       </div>
-      <UserProfile
-        appearance={{
-          elements: {
-            rootBox: "w-full max-w-4xl",
-            cardBox: "rounded-md shadow-sm",
-            profileSectionPrimaryButton__username: "!hidden",
-          },
-        }}
-      />
+      <UserProfilePanel />
       <UserProfileMetadataFields />
     </main>
   );
